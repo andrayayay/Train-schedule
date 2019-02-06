@@ -1,6 +1,7 @@
+$(document).ready(function(){
 
 // Initialize Firebase
-  var config = {
+var config = {
     apiKey: "AIzaSyD7mkCDzRqdSsYYsnhc38c4T3-vlKfU-EU",
     authDomain: "train-schedule-8283a.firebaseapp.com",
     databaseURL: "https://train-schedule-8283a.firebaseio.com",
@@ -13,7 +14,6 @@
 
 var database = firebase.database();
 
-
 $("#add-train-btn").on("click", function(event){
     event.preventDefault();
 
@@ -23,60 +23,76 @@ $("#add-train-btn").on("click", function(event){
     userTrainTime = $("#time-input").val().trim();
     userFrequency = $("#frequency-input").val().trim();
 
-    newTrain = {
-        name: userTrainName,
-        destination: userDestination,
-        time: userTrainTime,
-        frequency: userFrequency
-    };
-
-    // pushes train data to firebase 
-    database.ref().push(newTrain);
-
-    console.log(newTrain.name);
-    console.log(newTrain.destination);
-    console.log(newTrain.time);
-    console.log(newTrain.frequency);
+    // push to database
+    database.ref().push({
+        name: trainName,
+        destination: trainDestination,
+        time: trainTime,
+        frequency: trainFrequency,
+        dataAdded: firebase.database.ServerValue.TIMESTAMP
+    });
 
     // clear out text-box
     $("#train-name-input").val("");
     $("#destination-input").val("");
     $("#time-input").val("");
     $("#frequency-input").val("");
+
 });
 
-// firebase event for addng train to database and HTML 
-database.ref().on("child_added",function(childSnapshot){
-    console.log(childSnapshot.val());
+// adding children to train schedule
+database.ref().on('child_added', function(snapshot){
+    console.log(snapshot.val());
 
-// variables to store the data from firebase
-   
+    var userTrainName = snapshot.val().name;
+    var userDestination = snapshot.val().destination;
+    var userTrainTime = snapshot.val().time;
+    var userFrequency = snapshot.val().frequency;
 
-    // console.log(newTrain.name);
-    // console.log(newTrain.destination)
-    // console.log(newTrain.time);
-    // console.log(newTrain.frequency);
-    // console.log(minsTillArrival);
-    // console.log(nextTrain);
+    console.log(userTrainName);
+    console.log(userDestination);
+    console.log(userTrainTime);
+    console.log(userFrequency);
 
- 
+    // moment math
+    var tStart = userTrainTime;
+    var tFrequency = userFrequency;
 
-    // timeDisplay = moment.unix(trainTime).format("MM/DD/YYYY");
+// First Time Train from user?
+    var firstTimeConverted = moment(tStart, "hh:mm").subtract(1, "years");
+    console.log(firstTimeConverted + "User Train Time Input");
 
-    // calculations go here
-        // NEXT ARRIVAL 
-            // MINUTES AWAY 
+// Current Time
+    var currentTime = moment();
+    console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
 
-    // // create new rows
-    newRow = $("<tr>").append(
-        $("<td>").text(userTrainName),
-        $("<td>").text(userDestination),
-        $("<td>").text(userTrainName),
-        $("<td>").text(userFrequency),
-    //     $("<td>").text(minsTillArrival),
-    //     $("<td>").text(nextTrain)
-    );
+// Difference between times
+    var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+    console.log("DIFFERENCE IN TIME: " + diffTime);
 
-    // // append new row to table
-    // $("#train-table > tbody").append(newRow);
+// Time apart (remainder)
+    var tRemainder = diffTime % tFrequency;
+    console.log(tRemainder);
+
+// Minute Until Train
+    var tMinutesTillTrain = tFrequency - tRemainder;
+    console.log("MINUTES TILL TRAIN: " + tMinutesTillTrain);
+
+// Next Train
+    var nextTrain = moment().add(tMinutesTillTrain, "minutes").format("hh:mm");
+    console.log("Next Train" + nextTrain);
+
+// adding a new row to train schedule
+var newRow = $("<tr>");
+    newRow.append("<td>" + userTrainName + "</td>");
+    newRow.append("<td>" + userDestination + "</td>");
+    newRow.append("<td>" + userTrainTime + "</td>");
+    newRow.append("<td>" + userFrequency + "</td>");
+    newRow.append("<td>" + nextTrain + "</td>");
+    newRow.append("<td>" + tMinutesTillTrain + "</td>");
+
+    $("#train-table").append(newRow);
 })
+
+});
+
