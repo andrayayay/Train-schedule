@@ -25,10 +25,10 @@ $("#add-train-btn").on("click", function(event){
 
     // push to database
     database.ref().push({
-        name: trainName,
-        destination: trainDestination,
-        time: trainTime,
-        frequency: trainFrequency,
+        name: userTrainName,
+        destination: userDestination,
+        time: userTrainTime,
+        frequency: userFrequency,
         dataAdded: firebase.database.ServerValue.TIMESTAMP
     });
 
@@ -90,9 +90,18 @@ var newRow = $("<tr>");
     newRow.append("<td>" + userFrequency + "</td>");
     newRow.append("<td>" + nextTrain + "</td>");
     newRow.append("<td>" + tMinutesTillTrain + "</td>");
+    newRow.append("<td>" + '<i class="fa fa-trash" id="trashcan" aria-hidden="true"></i>' + "</td>");
+    
 
     $("#train-table").append(newRow);
 })
+
+// this only temporarily removes row - doesn't delete from database 
+// and row will show back up when refreshed
+$("body").on("click", "#trashcan", function() {
+    alert("You have clicked the trashcan");
+    $(this).closest("tr").remove();
+  });
 
 });
 
