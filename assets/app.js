@@ -42,7 +42,7 @@ $("#add-train-btn").on("click", function(event){
 
 // adding children to train schedule
 database.ref().on('child_added', function(snapshot){
-    console.log(snapshot.val());
+    // console.log(snapshot.val());
 
     var userTrainName = snapshot.val().name;
     var userDestination = snapshot.val().destination;
@@ -98,9 +98,23 @@ var newRow = $("<tr>");
 
 // this only temporarily removes row - doesn't delete from database 
 // and row will show back up when refreshed
+var rootRef = firebase.database().ref().child("train-schedule-8283a");
 $("body").on("click", "#trashcan", function() {
-    alert("You have clicked the trashcan");
+    alert("You have removed train info from your browser");
     $(this).closest("tr").remove();
+    var rowId = $row.data('id');
+        rootRef.child(rowId).remove()
+    var assetKey = rootRef.child("id");
+    //it should remove the firebase object in here
+    rootRef.child(assetKey).remove()
+    //after firebase confirmation, remove table row
+    .then(function() {
+      $row.remove();
+    })
+    //Catch errors
+    .catch(function(error) {
+      console.log('ERROR');
+    });  
   });
 
 });
